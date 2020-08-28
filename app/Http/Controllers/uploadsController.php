@@ -19,9 +19,13 @@ class uploadsController extends Controller
      */
     public function ifExists(Request $request)
     {
-        $existing_upload_id = implode($request->only(['ext_upload_id']));
-        $existing_upload_items = json_decode($request->input('upload_items'), TRUE);
-
+       // $existing_upload_id = implode($request->only(['ext_upload_id']));
+        //$existing_upload_items = json_decode($request->input('upload_items'), TRUE);
+		$input = $request->json()->all();
+		$existing_upload_id = $input['ext_upload_id'];
+		$upload_item = $input['upload_items'];
+		$existing_upload_items =$upload_item;
+		
         // Delete existing items from uploads table
         $deleteUploads = DB::table('uploads')
                                 ->where('ext_upload_id', $existing_upload_id)
@@ -68,9 +72,17 @@ class uploadsController extends Controller
      */
     public function uploadFiles(Request $request)
     {
-        $ext_upload_id = implode($request->only(['ext_upload_id']));
+        /* $ext_upload_id = implode($request->only(['ext_upload_id']));
         $upload_items = json_decode($request->input('upload_items'), TRUE);
-        $retry_upload = implode($request->only(['retry']));
+        $retry_upload = implode($request->only(['retry'])); */
+		
+		$input = $request->json()->all();
+		$ext_upload_id = $input['ext_upload_id'];
+		$upload_item = $input['upload_items'];
+		$upload_items = $upload_item;
+		//$upload_items = json_decode(json_encode($upload_item),TRUE);
+		$retry_upload =$input['retry'];
+		
         $uploadItemFound = false;
         $uploadFound = false;
         
@@ -95,7 +107,7 @@ class uploadsController extends Controller
         }
 
         // Check if upload_items available
-        foreach($upload_items["data"] as $row)
+        foreach($upload_items as $row)
         {
             $ext_upload_item_id = $row['ext_upload_item_id'];
             
@@ -125,7 +137,7 @@ class uploadsController extends Controller
             $arruploadItems = array();
 
             // Looping through uploadFiles hash
-            foreach($upload_items["data"] as $row) {
+            foreach($upload_items as $row) {
 
                 $file_name = $row['file_name'];
                 $uploadURL = $this->signedURL($file_name);
@@ -154,7 +166,9 @@ class uploadsController extends Controller
      */
     public function getUploads(Request $request)
     {
-        $ext_upload_id = implode($request->only(['ext_upload_id']));       
+		$input = $request->json()->all();
+		$ext_upload_id = $input['ext_upload_id'];
+       // $ext_upload_id = implode($request->only(['ext_upload_id']));       
         
 		$result = $this->getDeatils($ext_upload_id);
 		return $result;

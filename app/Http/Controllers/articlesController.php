@@ -19,9 +19,12 @@ class articlesController extends Controller
      * Executes when true flag is present
      */
     public function ifExists(Request $request)
-    {
-        $existing_article_id = implode($request->only(['ext_article_id']));
-        $media_items = json_decode($request->input('attachments'), TRUE);
+    {     
+		
+		$input = $request->json()->all();
+		$existing_article_id = $input['ext_article_id'];
+		$media_items = $input['attachments'];
+		
         
         // Delete existing article from articles table
         $deleteArticle = DB::table('articles')
@@ -29,7 +32,7 @@ class articlesController extends Controller
                                 ->delete();
 
         // Delete existing media items from medias table
-        foreach($media_items["data"] as $row)
+        foreach($media_items as $row)
             {
             $existing_media_item_id = $row['ext_upload_item_id'];
             
@@ -49,15 +52,17 @@ class articlesController extends Controller
         return $getRow;
     }
 
-    /**
+    /*
      * Executes createArticles
      * Checks if retry there
      */
+	 
     public function createArticles(Request $request)
-    {
-        $ext_article_id = implode($request->only(['ext_article_id']));
-        $attachments = json_decode($request->input('attachments'), TRUE);
-        $retry_create = implode($request->only(['retry']));
+    {      
+		$input = $request->json()->all();
+		$ext_article_id = $input['ext_article_id'];
+		$attachments = $input['attachments'];
+		$retry_create = $input['retry'];
         $articleFound = false;
 
         $articleID = DB::table('articles')
@@ -105,7 +110,7 @@ class articlesController extends Controller
             //insert to medias
             $arrmediaItems = array();
 
-            foreach ($attachments["data"] as $row) {
+            foreach ($attachments as $row) {
             $medias = new medias;
 
             // Get row from uploadFiles
@@ -137,7 +142,8 @@ class articlesController extends Controller
      */
     public function getArticle(Request $request)
     {
-        $ext_article_id = implode($request->only(['ext_article_id']));
+        $input = $request->json()->all();
+		$ext_article_id = $input['ext_article_id'];
       
 		$result=$this->getStoredata($ext_article_id);	
 		return $result;

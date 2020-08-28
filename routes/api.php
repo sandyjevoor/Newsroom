@@ -42,3 +42,9 @@ Route::get('getArticle','articlesController@getArticle');
 Route::get('getAllArticles', function () {
     return App\articles::paginate();
 }); 
+
+// store business group values
+Route::post('UploadBusinessGroup', 'BusinessGroupController@UploadBusinessgroup');
+
+// Get Schema on auth token
+Route::get('getSchema','BusinessGroupController@getSchema');
