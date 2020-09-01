@@ -209,4 +209,227 @@ class articlesController extends Controller
 		});
 		return $map;
 	}
+	
+	
+	 public function update_article(Request $request)
+    {      
+		$input = $request->json()->all();
+        $articleFound = false;
+		
+		// Grab our Input as individual variables so they are easier to work with
+		if (isset($input['ext_article_id'])) {
+				$ext_article_id    =   $input['ext_article_id'];
+			}
+		if (isset($input['attachments'])) {
+				$attachments       =   $input['attachments'];
+			}
+		if (isset($input['retry'])) {
+				$retry_create      =   $input['retry'];
+			}
+		if (isset($input['title'])) {
+				$title 		       =   $input['title'];
+			}
+		if (isset($input['headline'])) {
+				$headline          =   $input['headline'];
+			}
+		if (isset($input['kicker'])) {
+				$kicker            =   $input['kicker'];
+			}
+		if (isset($input['caption'])) {
+				$caption           =   $input['caption'];
+			}
+		if (isset($input['tags'])) {
+				$tags 		       =   $input['tags'];
+			}
+		if (isset($input['body'])) {
+				$body 			   =   $input['body'];
+			}
+		if (isset($input['declaration'])) {
+				$declaration       =   $input['declaration'];
+			}
+		if (isset($input['location'])) {
+				$location          =   $input['location'];
+			}
+		if (isset($input['language'])) {
+				$language 		   =   $input['language'];
+			}
+		if (isset($input['district'])) {
+				$district 		   =   $input['district'];
+			}
+		if (isset($input['state'])) {
+				$state 			   =   $input['state'];
+			}
+		if (isset($input['reporter_name'])) {
+				$reporter_name 	   =   $input['reporter_name'];
+			}
+		if (isset($input['reporter_id'])) {
+				$reporter_id 	   =   $input['reporter_id'];
+			}
+		if (isset($input['publish_status'])) {
+				$publish_status    =   $input['publish_status'];
+			}
+		if (isset($input['ingest_status'])) {
+				$ingest_status     =   $input['ingest_status'];
+			}
+		if (isset($input['ingest_id'])) {
+				$ingest_id 		   =   $input['ingest_id'];
+			}
+			
+								 		
+		$article_ID = DB::table('articles')
+							->where('ext_article_id', $ext_article_id)
+                            ->value('id');
+		if($article_ID=="")
+		{
+			return response()->json([
+                'ext_article_id'     => $ext_article_id,
+                'message'           => 'error in update article, article id not present',
+            ]);
+		}
+		else
+		{
+		
+		// Use Eloquent to grab the gift record that we want to update,
+		// referenced by the ID passed to the REST endpoint
+		$createArticle = articles::find($article_ID);
+		
+		if(isset($title))
+		{
+		   $createArticle->title 			 = $title 		? $title : $createArticle->title;
+		}
+		if(isset($headline))
+		{
+		   $createArticle->headline		 = $headline 	? $headline : $createArticle->headline;
+		}
+		if(isset($kicker))
+		{
+		   $createArticle->kicker 			 = $kicker 		? $kicker : $createArticle->kicker;
+		}      
+		if(isset($caption))
+		{
+		   $createArticle->caption			 = $caption	    ? $caption : $createArticle->caption;
+		}      
+		if(isset($tags))
+		{
+		   $createArticle->tags			 = $tags		? $tags : $createArticle->tags;
+		}  		
+		if(isset($body))
+		{
+		   $createArticle->body			 = $body		? $body : $createArticle->body;   
+		}  
+		if(isset($declaration))
+		{
+		   $createArticle->declaration		 = $declaration ? $declaration : $createArticle->declaration;    
+		}     
+		if(isset($location))
+		{
+		   $createArticle->location		 = $location	? $location : $createArticle->location;    
+		}     
+		if(isset($language))
+		{
+		   $createArticle->language		 = $language 	? $language : $createArticle->language;  
+		} 		
+		if(isset($district))
+		{
+		   $createArticle->district		 = $district 		? $district : $createArticle->district;
+		} 
+		if(isset($state))
+		{
+		   $createArticle->state			 = $state 			 ? $state : $createArticle->state; 
+		}         
+		if(isset($reporter_name))
+		{
+		   $createArticle->reporter_name	 = $reporter_name 	 ? $reporter_name : $createArticle->reporter_name;		
+		}
+		if(isset($reporter_id))
+		{
+		   $createArticle->reporter_id		 = $reporter_id 	 ? $reporter_id : $createArticle->reporter_id;	
+		}
+		if(isset($publish_status))
+		{
+		   $createArticle->publish_status	 = $publish_status	 ? $publish_status : $createArticle->publish_status; 	
+		}
+		if(isset($ingest_status))
+		{
+		   $createArticle->ingest_status	 = $ingest_status	 ? $ingest_status : $createArticle->ingest_status;  	
+		}    
+		if(isset($ingest_id))
+		{
+		   $createArticle->ingest_id		 = $ingest_id 		 ? $ingest_id : $createArticle->ingest_id;
+		}       
+		
+
+		$createArticle->save();      
+
+		
+		
+		
+		 //Check wheater media files are present
+    			
+			$items = array();
+			$count = 0;
+			foreach ($attachments as $row) {           
+			$ext_upload_item_id = $row['ext_upload_item_id'];
+            
+			// Get row from medias  					
+			$ext_upload_ID = DB::table('medias')	
+							 ->where('ext_upload_item_id', $ext_upload_item_id)			
+							 ->where('article_id', $article_ID)							
+                             ->value('ext_upload_item_id');
+			
+				if($ext_upload_ID == $ext_upload_item_id)
+				{
+					$ext_upload_item_id = $row['ext_upload_item_id'];
+					$getUploadedItem = $this->getValues($ext_upload_item_id);
+					
+					$medias_ID = DB::table('medias')
+							 ->where('ext_upload_item_id', $ext_upload_item_id)			
+							 ->where('article_id', $article_ID)	
+                            ->value('id');
+		
+					// Use Eloquent to grab the gift record that we want to update,
+					// referenced by the ID passed to the REST endpoint
+						$file_name            = $getUploadedItem->file_name;
+						$file_type            = $getUploadedItem->file_type;
+						$file_size            = $getUploadedItem->file_size;
+						$upload_url           = $getUploadedItem->upload_url;
+					
+					$updateMedias = medias::find($medias_ID);
+					$updateMedias->file_name 			 = $file_name 		? $file_name : $updateMedias->file_name;
+					$updateMedias->file_type			 = $file_type 	    ? $file_type : $updateMedias->file_type;
+					$updateMedias->file_size 			 = $file_size 		? $file_size : $updateMedias->file_size;
+					$updateMedias->upload_url			 = $upload_url	    ? $upload_url : $updateMedias->upload_url;
+					
+					$updateMedias -> save();
+					
+				}
+				else
+				{				
+										
+					$medias = new medias;
+
+						// Get row from uploadFiles
+						$ext_upload_item_id = $row['ext_upload_item_id'];
+						$getUploadedItem = $this->getValues($ext_upload_item_id);
+            
+						//$medias     -> article()->associate($createArticle);
+						$medias     -> ext_upload_item_id   = $getUploadedItem->ext_upload_item_id;
+						$medias		-> article_id			= $article_ID;
+						$medias     -> file_name            = $getUploadedItem->file_name;
+						$medias     -> file_type            = $getUploadedItem->file_type;
+						$medias     -> file_size            = $getUploadedItem->file_size;
+						$medias     -> upload_url           = $getUploadedItem->upload_url;
+
+						$medias -> save();
+				
+				}
+		
+		
+			}
+		
+		$result=$this->getStoredata($ext_article_id);
+		return $result;
+        
+    }
+	}
 }
